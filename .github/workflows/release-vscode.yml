@@ -1,0 +1,95 @@
+name: release-vscode
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (e.g. 0.1.0). Used for the vsix name when run manually; skipped on tag pushes."
+        required: false
+
+env:
+  SERVER_PLATFORM: win32-x64
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ide-plugins/vscode-tlua
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" = refs/tags/* ]]; then
+            VERSION="${GITHUB_REF##*/v}"
+          elif [[ -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="0.0.0-${GITHUB_SHA:0:7}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "resolved version: ${VERSION}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: ide-plugins/vscode-tlua/package-lock.json
+
+      - name: Install luamake
+        uses: actboy168/setup-luamake@master
+
+      - name: Build server
+        working-directory: tlua-language-server
+        run: luamake -platform ${{ env.SERVER_PLATFORM }}
+
+      - name: Copy server runtime into vscode-tlua/server
+        shell: bash
+        run: bash scripts/copy-server.sh
+
+      - name: Verify server layout
+        shell: bash
+        run: |
+          test -f server/bin/lua-language-server.exe
+          test -f server/bin/main.lua
+          test -f server/main.lua
+          test -f server/debugger.lua
+          test -d server/script
+          echo "server layout ok"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Compile
+        run: npm run compile
+
+      - name: Bump package.json version
+        shell: bash
+        run: npm version --no-git-tag-version "${{ steps.ver.outputs.version }}"
+
+      - name: Package vsix
+        run: npx @vscode/vsce package --no-git-tag-version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tlua-${{ steps.ver.outputs.version }}-vsix
+          path: ide-plugins/vscode-tlua/tlua-*.vsix
+
+      - name: Publish to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: ide-plugins/vscode-tlua/tlua-*.vsix

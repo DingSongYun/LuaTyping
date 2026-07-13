@@ -28,25 +28,27 @@ end
 ---@lua-typing strict
 ```
 
-## 构建
-
-前置：`tlua-language-server/` 已构建（`bin/lua-language-server.exe` 存在）。
-
-```bash
-cd vscode-tlua
-bash scripts/copy-server.sh   # 拷贝 server 运行时到 server/
-npm install
-npm run compile
-npx @vscode/vsce package      # → tlua-0.1.0.vsix
-```
-
 ## 安装
+
+**推荐：从 GitHub Release 安装**
+
+到 [Releases 页](https://github.com/blackbladestudio/lua_typing/releases) 下载最新的 `tlua-*.vsix`，然后：
 
 ```bash
 code --install-extension tlua-0.1.0.vsix
 ```
 
 或 VSCode → 扩展 → ⋯ → 从 VSIX 安装。
+
+**自行构建**
+
+```bash
+cd ide-plugins/vscode-tlua
+bash scripts/copy-server.sh   # 拷贝 server 运行时到 server/
+npm install
+npm run compile
+npx @vscode/vsce package      # → tlua-0.1.0.vsix
+```
 
 ## 配置
 
