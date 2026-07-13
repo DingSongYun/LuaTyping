@@ -8,13 +8,70 @@
 |--------|------|------|
 | [tlua](tlua/) | TypingLua 转译器 & 解释器（C 语言实现） | [DingSongYun/tlua](https://github.com/DingSongYun/tlua) |
 | [tlua-language-server](tlua-language-server/) | TypingLua 语言服务器（基于 LuaLS fork） | [DingSongYun/lua-language-server](https://github.com/DingSongYun/lua-language-server) |
+| [vscode-tlua](ide-plugins/vscode-tlua/) | VSCode 扩展（对 .lua 启动内嵌 LSP server，LSP-only） | — |
+| [rider-tlua](ide-plugins/rider-tlua/) | Rider 插件（对 .lua 启动内嵌 LSP server，LSP-only，独立，不依赖 EmmyLua） | — |
+
+## 安装编辑器插件
+
+TypingLua 的类型标注直接写在标准 `.lua` 文件里（如 `local x: number = 42`）。两个插件各自内嵌 Windows 版 LSP server 运行时，对 `.lua` 文件启动 fork 的 server，提供补全/悬停/诊断。**插件只负责 LSP，不提供语法高亮** —— 高亮由用户自选的 Lua 扩展（官方 sumneko.lua / EmmyLua 等）提供。
+
+### 启用内联标注
+
+在 `.lua` 文件**第 1 行**写 `---@lua-typing` 标记，server 才会解析该文件的内联类型标注；无标记的 `.lua` 按普通 Lua 处理。这样同一工作区可混用 TypingLua 文件与普通 Lua 文件，且与官方 Lua 扩展零冲突。
+
+标记匹配较宽松：`--` 或 `---`（≥2 个减号）+ 任意空格 + 连续的 `@lua-typing`（不可被空格打断）。`---@lua-typing`、`--@lua-typing`、`--- @lua-typing` 均合法。
+
+```lua
+---@lua-typing
+local x: number = 42
+local function add(a: number, b: number): number
+    return a + b
+end
+```
+
+前置：`tlua-language-server/` 已构建（`bin/lua-language-server.exe` 存在）。
+
+### VSCode
+
+```bash
+cd ide-plugins/vscode-tlua
+bash scripts/copy-server.sh   # 拷贝 server 运行时到 server/
+npm install
+npm run compile
+npx @vscode/vsce package      # → tlua-0.1.0.vsix
+code --install-extension tlua-0.1.0.vsix
+```
+
+或 VSCode → 扩展 → ⋯ → 从 VSIX 安装。配置项 `tluaLsp.serverPath` 可覆盖内嵌 server 路径。
+
+> 若官方 `sumneko.lua` 同时启用其 LSP server，会与本插件产生双重诊断，建议二选一。
+
+### Rider
+
+前置：本机已装 JDK 17+ 和 Gradle 8.10+（或用 Rider 自带 JBR）。
+
+```bash
+cd ide-plugins/rider-tlua
+bash scripts/copy-server.sh                      # 拷贝 server 运行时到 resources/bin/
+gradle wrapper --gradle-version 8.10             # 首次：生成 gradlew
+./gradlew buildPlugin                            # → build/distributions/rider-tlua-0.1.0.zip
+```
+
+Rider → Settings → Plugins → ⚙ → Install Plugin from Disk → 选 zip。
+
+> 注：Rider 插件依赖 `com.intellij.modules.lsp`，仅商业版 IntelliJ IDE（Rider / IDEA Ultimate 等）可用，IDEA Community / Android Studio 不支持。
 
 ## 核心理念
 
-`.tlua` 文件使用冒号语法进行内联类型标注，转译器通过 **Type Erasure** 将类型信息完全剥离，输出标准 Lua 5.4 代码。类型信息仅用于静态分析（语言服务器），不影响运行时行为。
+TypingLua 的内联类型标注直接写在 Lua 代码里，转译器通过 **Type Erasure** 将类型信息完全剥离，输出标准 Lua 5.4 代码。类型信息仅用于静态分析（语言服务器），不影响运行时行为。
+
+支持两种文件形式：
+
+- **`.lua` + 首行 `---@lua-typing` 标记**（推荐）：转译器与 LSP server 据此启用类型标注语义；无标记的 `.lua` 按普通 Lua 处理（原样透传）。
+- **`.tlua` 扩展名**（兼容）：总是被转译，不论是否含标记。
 
 ```lua
--- examples/demo.tlua
+-- examples/demo.tlua（.tlua 无需标记；若用 .lua 需首行写 ---@lua-typing）
 local function add(a: number, b: number): number
     return a + b
 end
@@ -50,18 +107,22 @@ cd tlua
 .claude/skills/run-tlua/smoke.sh build
 ```
 
-### 运行 .tlua 文件
+### 运行 TypingLua 文件
 
 ```bash
 cd tlua
-# 直接运行
+# 运行 .tlua（总是转译）
 build/tlua.exe examples/demo.tlua
 
-# 执行内联代码
+# 运行 .lua（首行有 ---@lua-typing 标记才转译，否则按普通 Lua 执行）
+build/tlua.exe path/to/marked.lua
+
+# 执行内联代码（总是转译）
 build/tlua.exe -e "local x: number = 42; print(x)"
 
 # 转译为 .lua
-build/tluac.exe -p examples/demo.tlua
+build/tluac.exe -p examples/demo.tlua          # .tlua 总是转译
+build/tluac.exe -p path/to/marked.lua          # .lua 有标记才转译，无标记原样输出
 ```
 
 ### 构建语言服务器
@@ -116,6 +177,9 @@ LuaTyping/
 │   ├── test/                   #   测试套件
 │   ├── 3rd/                    #   依赖（bee.lua, luamake, lpeglabel）
 │   └── make.lua                #   构建配置
+├── ide-plugins/                # 编辑器插件（LSP-only）
+│   ├── vscode-tlua/            #   VSCode 扩展（npm + tsc + vscode-languageclient）
+│   └── rider-tlua/             #   Rider 插件（Kotlin + Gradle + IntelliJ LSP API）
 └── README.md                   # 本文件
 ```
 

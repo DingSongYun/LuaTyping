@@ -1,0 +1,12 @@
+# vscode-tlua
+ide-plugins/vscode-tlua/node_modules/
+ide-plugins/vscode-tlua/out/
+ide-plugins/vscode-tlua/*.vsix
+ide-plugins/vscode-tlua/server/
+
+# rider-tlua
+ide-plugins/rider-tlua/build/
+ide-plugins/rider-tlua/*.zip
+ide-plugins/rider-tlua/src/main/resources/bin/
+ide-plugins/rider-tlua/.gradle/
+# gradle-wrapper.jar is committed by convention so ./gradlew works without a local Gradle install

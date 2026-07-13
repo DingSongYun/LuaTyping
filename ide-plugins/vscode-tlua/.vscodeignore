@@ -1,0 +1,11 @@
+*
+!out/**
+!server/**
+!package.json
+!README.md
+
+# explicitly exclude source/dev files (vsce keeps some by default)
+src/**
+scripts/**
+tsconfig.json
+.gitignore

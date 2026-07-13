@@ -1,0 +1,44 @@
+{
+  "name": "tlua",
+  "displayName": "TypingLua",
+  "description": "TypingLua language support — type annotations for Lua, with bundled language server.",
+  "version": "0.1.0",
+  "publisher": "blackbladestudio",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:lua"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "TypingLua",
+      "properties": {
+        "tluaLsp.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the tlua-language-server executable. Leave empty to use the bundled server."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.4.0"
+  }
+}

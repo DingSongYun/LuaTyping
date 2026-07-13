@@ -1,0 +1,19 @@
+<idea-plugin>
+  <id>com.blackbladestudio.rider-tlua</id>
+  <name>TypingLua Language Server</name>
+  <vendor>blackbladestudio</vendor>
+
+  <description><![CDATA[
+    Starts the TypingLua language server (a LuaLS fork) for .lua files, providing
+    inline type annotation support (e.g. <code>local x: number = 42</code>).
+    <p>This plugin is LSP-only — it does not provide syntax highlighting.
+    Use your preferred Lua plugin (e.g. EmmyLua) for highlighting.</p>
+  ]]></description>
+
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.lsp</depends>
+
+  <extensions defaultExtensionNs="com.intellij.platform.lsp">
+    <serverSupportProvider implementation="com.blackbladestudio.tlua.TluaLspServerSupportProvider"/>
+  </extensions>
+</idea-plugin>
