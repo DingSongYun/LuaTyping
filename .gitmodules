@@ -3,4 +3,4 @@
 	url = git@github.com:blackbladestudio/tlua.git
 [submodule "tlua-language-server"]
 	path = tlua-language-server
-	url = git@github.com:blackbladestudio/lua-language-server.git
+	url = git@github.com:blackbladestudio/tlua-language-server.git
