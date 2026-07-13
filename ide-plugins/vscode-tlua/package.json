@@ -2,7 +2,7 @@
   "name": "tlua",
   "displayName": "TypingLua",
   "description": "TypingLua language support — type annotations for Lua, with bundled language server.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "blackbladestudio",
   "license": "MIT",
   "engines": {
@@ -20,8 +20,12 @@
     "languages": [
       {
         "id": "lua",
-        "aliases": ["Lua"],
-        "extensions": [".lua"],
+        "aliases": [
+          "Lua"
+        ],
+        "extensions": [
+          ".lua"
+        ],
         "configuration": "./language-configuration.json"
       }
     ],
