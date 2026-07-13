@@ -6,7 +6,7 @@ export function activate(context: vscode.ExtensionContext) {
   const configured = vscode.workspace.getConfiguration("tluaLsp").get<string>("serverPath");
   const serverPath = configured && configured.length > 0
     ? configured
-    : path.join(context.extensionPath, "server", "lua-language-server.exe");
+    : path.join(context.extensionPath, "server", "bin", "lua-language-server.exe");
 
   const serverOptions: ServerOptions = {
     run: { command: serverPath },

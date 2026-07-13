@@ -3,6 +3,7 @@
 !server/**
 !package.json
 !README.md
+!language-configuration.json
 
 # explicitly exclude source/dev files (vsce keeps some by default)
 src/**

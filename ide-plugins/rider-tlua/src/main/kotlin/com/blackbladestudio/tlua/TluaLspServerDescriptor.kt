@@ -12,7 +12,7 @@ class TluaLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor
         file.extension.equals("lua", ignoreCase = true)
 
     override fun createCommandLine(): GeneralCommandLine {
-        val exe = File(PathManager.getPluginsPath(), "rider-tlua/bin/lua-language-server.exe")
+        val exe = File(PathManager.getPluginsPath(), "rider-tlua/bin/bin/lua-language-server.exe")
         val cmd = GeneralCommandLine(exe.path)
         cmd.workDirectory = project.basePath ?: ""
         return cmd
