@@ -77,7 +77,7 @@ jobs:
 
       - name: Bump package.json version
         shell: bash
-        run: npm version --no-git-tag-version "${{ steps.ver.outputs.version }}"
+        run: npm version --no-git-tag-version --allow-same-version "${{ steps.ver.outputs.version }}"
 
       - name: Package vsix
         run: npx @vscode/vsce package --no-git-tag-version
